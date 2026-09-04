@@ -21,20 +21,57 @@ import {
   ChevronRight,
   Shield,
   Layers,
-  Sparkle
+  Sparkle,
+  Bike,
+  Flower2,
+  Droplets,
+  Waves,
+  Star,
+  Cloud,
+  ArrowRight,
+  Gamepad2
 } from 'lucide-react';
-import { AppLanguage, CompanionConfig } from '../types';
+import { AppLanguage, CompanionConfig, CheckinData } from '../types';
 import { CompanionAvatar } from './CompanionAvatar';
+import { MindRideGame } from './relax/MindRideGame';
+import { CalmGardenGame } from './relax/CalmGardenGame';
+import { WorryRiverGame } from './relax/WorryRiverGame';
+import { StarBreathingGame } from './relax/StarBreathingGame';
+import { FeatherBalanceGame } from './relax/FeatherBalanceGame';
+import { CalmAquariumGame } from './relax/CalmAquariumGame';
+import { WaveSyncGame } from './relax/WaveSyncGame';
+import { FocusFlowGame } from './relax/FocusFlowGame';
+import { CloudReleaseGame } from './relax/CloudReleaseGame';
+import { LightTrailGame } from './relax/LightTrailGame';
+import { RelaxFeedbackModal } from './relax/RelaxFeedbackModal';
+import { PersonalizedRelaxRecommender, FeedbackLog } from './relax/PersonalizedRelaxRecommender';
 
 interface MindRelaxSessionViewProps {
   companion: CompanionConfig;
   language: AppLanguage;
+  latestCheckin?: CheckinData | null;
   onSessionComplete?: (type: string, durationMinutes: number) => void;
+  onRecordOutcome?: (interventionType: any, preStress: number, postStress: number, feedback: any) => void;
 }
 
-type RelaxActivityId = 'breathing' | 'bubble-pop' | 'ambient-soundscape' | 'grounding' | 'zen-doodle';
+export type RelaxActivityId =
+  | 'mind-ride'
+  | 'calm-garden'
+  | 'worry-river'
+  | 'star-breathing'
+  | 'feather-balance'
+  | 'calm-aquarium'
+  | 'wave-sync'
+  | 'focus-flow'
+  | 'cloud-release'
+  | 'light-trail'
+  | 'breathing'
+  | 'bubble-pop'
+  | 'ambient-soundscape'
+  | 'grounding'
+  | 'zen-doodle';
 
-interface RelaxActivity {
+export interface RelaxActivity {
   id: RelaxActivityId;
   title: string;
   titleTa?: string;
@@ -46,10 +83,164 @@ interface RelaxActivity {
   color: string;
   bgLight: string;
   darkBg: string;
-  category: 'breath' | 'tactile' | 'sound' | 'grounding';
+  category: 'game' | 'breath' | 'tactile' | 'sound' | 'grounding';
+  isMiniGame?: boolean;
 }
 
-const ACTIVITIES: RelaxActivity[] = [
+export const ACTIVITIES: RelaxActivity[] = [
+  // 10 Interactive Calming Mini-Games
+  {
+    id: 'mind-ride',
+    title: 'Mind Ride',
+    titleTa: 'அமைதி சைக்கிள் பயணம்',
+    titleTanglish: 'Mind Ride Cycling Oasis',
+    subtitle: 'Signature virtual campus cycling ride. Dissolve heavy CGPA, backlog, and deadline signs as you pedal peacefully into the sunset.',
+    duration: '2 - 5 mins',
+    icon: Bike,
+    badge: 'Signature Experience',
+    color: '#4A8B8D',
+    bgLight: '#EAF4F4',
+    darkBg: '#152527',
+    category: 'game',
+    isMiniGame: true,
+  },
+  {
+    id: 'calm-garden',
+    title: 'Calm Garden',
+    titleTa: 'அமைதித் தோட்டம்',
+    titleTanglish: 'Calm Garden Growth',
+    subtitle: 'Nurture a living virtual plant with your breathing rhythm. Watch it blossom into a serene sanctuary tree.',
+    duration: '3 mins',
+    icon: Flower2,
+    badge: 'Breath Growth',
+    color: '#3D6B57',
+    bgLight: '#EBF5EE',
+    darkBg: '#13261C',
+    category: 'game',
+    isMiniGame: true,
+  },
+  {
+    id: 'worry-river',
+    title: 'Worry Bubble River',
+    titleTa: 'கவலை குமிழி நதி',
+    titleTanglish: 'Worry Bubble River',
+    subtitle: 'Type any heavy academic thought into a floating bubble and watch it drift downriver into the calm horizon.',
+    duration: '2 mins',
+    icon: Droplets,
+    badge: 'Visual Release',
+    color: '#5C9496',
+    bgLight: '#EAF4F4',
+    darkBg: '#162325',
+    category: 'game',
+    isMiniGame: true,
+  },
+  {
+    id: 'star-breathing',
+    title: 'Star Breathing',
+    titleTa: 'விண்மீன் சுவாசம்',
+    titleTanglish: 'Star Breathing Night Sky',
+    subtitle: 'Inhale to brighten cosmic starlight and exhale to expand peace. Form serene celestial constellations.',
+    duration: '3 mins',
+    icon: Star,
+    badge: 'Cosmic Pace',
+    color: '#818CF8',
+    bgLight: '#EEF2FF',
+    darkBg: '#181C2E',
+    category: 'game',
+    isMiniGame: true,
+  },
+  {
+    id: 'feather-balance',
+    title: 'Feather Balance',
+    titleTa: 'இறகு சமநிலை',
+    titleTanglish: 'Feather Balance Stream',
+    subtitle: 'Float a gentle feather in steady breathing air currents. Zero failure, purely tranquil diaphragmatic pacing.',
+    duration: '2 - 4 mins',
+    icon: Feather,
+    badge: 'Soft Balance',
+    color: '#D97706',
+    bgLight: '#FEF3C7',
+    darkBg: '#2E1E09',
+    category: 'game',
+    isMiniGame: true,
+  },
+  {
+    id: 'calm-aquarium',
+    title: 'Calm Aquarium',
+    titleTa: 'அமைதி மீன் தொட்டி',
+    titleTanglish: 'Calm Aquarium Flow',
+    subtitle: 'Gently guide a school of peaceful koi fish through tranquil water with touch ripples and water drops.',
+    duration: 'Free Pace',
+    icon: Waves,
+    badge: 'Visual Grounding',
+    color: '#1A4D62',
+    bgLight: '#E0F2FE',
+    darkBg: '#0C2836',
+    category: 'game',
+    isMiniGame: true,
+  },
+  {
+    id: 'wave-sync',
+    title: 'Wave Sync',
+    titleTa: 'அலை இசைவு சுவாசம்',
+    titleTanglish: 'Wave Sync Tidal Breath',
+    subtitle: 'Synchronize your breath with continuous ocean tidal swells: Inhale as waves rise, exhale as they fall.',
+    duration: '3 mins',
+    icon: Waves,
+    badge: 'Vagal Sync',
+    color: '#255D7E',
+    bgLight: '#E0F2FE',
+    darkBg: '#0F2736',
+    category: 'game',
+    isMiniGame: true,
+  },
+  {
+    id: 'focus-flow',
+    title: 'Focus Flow',
+    titleTa: 'கவன ஒருமுகப்படுத்தல்',
+    titleTanglish: 'Focus Flow Matching',
+    subtitle: 'Gentle, low-effort shape alignment to redirect attention from racing loops without stressful countdown clocks.',
+    duration: '2 mins',
+    icon: Layers,
+    badge: 'Gentle Focus',
+    color: '#4A8B8D',
+    bgLight: '#F5F2EB',
+    darkBg: '#181F22',
+    category: 'game',
+    isMiniGame: true,
+  },
+  {
+    id: 'cloud-release',
+    title: 'Cloud Release',
+    titleTa: 'மேக சிந்தனை விடுவிப்பு',
+    titleTanglish: 'Cloud Release Sky',
+    subtitle: 'Write a thought and watch it drift across a sunset sky, evaporating safely into the evening air.',
+    duration: '2 mins',
+    icon: Cloud,
+    badge: 'Mindful Drift',
+    color: '#4F6C8A',
+    bgLight: '#F0F4F8',
+    darkBg: '#182430',
+    category: 'game',
+    isMiniGame: true,
+  },
+  {
+    id: 'light-trail',
+    title: 'Light Trail',
+    titleTa: 'ஒளிரும் சுவடு',
+    titleTanglish: 'Light Trail Ribbon',
+    subtitle: 'Trace slow circular glowing particle ribbons across an obsidian canvas to slow down nervous pacing.',
+    duration: 'Free Flow',
+    icon: Sparkles,
+    badge: 'Kinetic Glow',
+    color: '#06D6A0',
+    bgLight: '#E6FAF5',
+    darkBg: '#0B241D',
+    category: 'game',
+    isMiniGame: true,
+  },
+
+  // 5 Classic Guided Resets
   {
     id: 'breathing',
     title: '4-7-8 Deep Vagus Reset',
@@ -125,16 +316,20 @@ const ACTIVITIES: RelaxActivity[] = [
 export const MindRelaxSessionView: React.FC<MindRelaxSessionViewProps> = ({
   companion,
   language,
+  latestCheckin,
   onSessionComplete,
+  onRecordOutcome,
 }) => {
-  const [selectedActivity, setSelectedActivity] = useState<RelaxActivityId>('breathing');
+  const [selectedActivity, setSelectedActivity] = useState<RelaxActivityId>('mind-ride');
   const [sessionActive, setSessionActive] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [activeTabFilter, setActiveTabFilter] = useState<'all' | 'games' | 'classic' | 'for-you'>('games');
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [completedSessionsCount, setCompletedSessionsCount] = useState(() => {
     try {
-      return parseInt(localStorage.getItem('mb_relax_sessions_count') || '3', 10);
+      return parseInt(localStorage.getItem('mb_relax_sessions_count') || '4', 10);
     } catch {
-      return 3;
+      return 4;
     }
   });
 
@@ -158,29 +353,69 @@ export const MindRelaxSessionView: React.FC<MindRelaxSessionViewProps> = ({
     return () => clearInterval(interval);
   }, [sessionActive]);
 
-  const handleFinishSession = () => {
+  const handleFinishSession = (customDurationMinutes?: number) => {
     triggerHaptic(30);
+    const duration = customDurationMinutes ?? Math.max(1, Math.round(elapsedSeconds / 60));
     setSessionActive(false);
     const newCount = completedSessionsCount + 1;
     setCompletedSessionsCount(newCount);
     try {
       localStorage.setItem('mb_relax_sessions_count', newCount.toString());
     } catch {}
+
     if (onSessionComplete) {
-      onSessionComplete(selectedActivity, Math.max(1, Math.round(elapsedSeconds / 60)));
+      onSessionComplete(selectedActivity, duration);
     }
+    // Open feedback loop modal
+    setFeedbackModalOpen(true);
+  };
+
+  const handleSaveFeedback = (feeling: 'better' | 'same' | 'stressed', note?: string) => {
+    const act = ACTIVITIES.find((a) => a.id === selectedActivity);
+    const title = act?.title || selectedActivity;
+
+    const newLog: FeedbackLog = {
+      gameId: selectedActivity,
+      gameTitle: title,
+      feeling,
+      timestamp: new Date().toISOString(),
+      note,
+    };
+
+    try {
+      const existing = localStorage.getItem('mb_relax_feedback_logs');
+      const logs: FeedbackLog[] = existing ? JSON.parse(existing) : [];
+      logs.unshift(newLog);
+      localStorage.setItem('mb_relax_feedback_logs', JSON.stringify(logs.slice(0, 30)));
+    } catch {}
+
+    if (onRecordOutcome) {
+      const preStress = latestCheckin?.stress ? latestCheckin.stress * 20 : 60;
+      const postDelta = feeling === 'better' ? -25 : feeling === 'same' ? -5 : 0;
+      onRecordOutcome(
+        selectedActivity as any,
+        preStress,
+        Math.max(10, preStress + postDelta),
+        feeling === 'better' ? 'much-better' : feeling === 'same' ? 'same' : 'worse'
+      );
+    }
+
+    setFeedbackModalOpen(false);
     setElapsedSeconds(0);
   };
 
-  const formatTime = (secs: number) => {
-    const m = Math.floor(secs / 60);
-    const s = secs % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-  };
+  // Filter activities based on tab
+  const filteredActivities = ACTIVITIES.filter((act) => {
+    if (activeTabFilter === 'games') return act.isMiniGame;
+    if (activeTabFilter === 'classic') return !act.isMiniGame;
+    return true;
+  });
+
+  const activeActivityObj = ACTIVITIES.find((a) => a.id === selectedActivity) || ACTIVITIES[0];
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      {/* Top Banner: Mind Oasis / Relaxation Hub */}
+      {/* Top Banner: Mind Oasis & Relaxation Hub */}
       <div className="bg-linear-to-br from-[#4A8B8D] via-[#3B7274] to-[#254F51] text-white p-6 sm:p-8 rounded-[32px] sm:rounded-[36px] shadow-sm relative overflow-hidden">
         {/* Subtle Ambient Shapes */}
         <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
@@ -191,7 +426,7 @@ export const MindRelaxSessionView: React.FC<MindRelaxSessionViewProps> = ({
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-bold uppercase tracking-wider px-3 py-1 bg-white/20 text-[#D1E5E6] rounded-full backdrop-blur-xs flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-[#F5D5CB]" />
-                {language === 'ta' ? 'அமைதி மற்றும் தியான மையம்' : language === 'tanglish' ? 'Mind Relax & Reset Hub' : 'Mind Oasis & De-Stress Room'}
+                {language === 'ta' ? 'அமைதி மற்றும் தியான மையம்' : language === 'tanglish' ? 'Mind Relax & Reset Oasis' : 'Mind Relax Oasis & Calming Spaces'}
               </span>
               <span className="text-[11px] bg-[#E98A72] text-white font-bold px-2.5 py-0.5 rounded-full shadow-2xs">
                 {completedSessionsCount} Resets Done
@@ -200,18 +435,16 @@ export const MindRelaxSessionView: React.FC<MindRelaxSessionViewProps> = ({
 
             <h2 className="font-serif italic text-2xl sm:text-3xl text-white tracking-tight">
               {language === 'ta'
-                ? 'உங்கள் மனதை அமைதிப்படுத்தும் பயிற்சிகள்'
+                ? 'உங்கள் மனதை அமைதிப்படுத்தும் பயிற்சிகள் & மினி-கேம்ஸ்'
                 : language === 'tanglish'
-                ? 'Mind stress-ah relax panna quick activities'
-                : 'Pause, Breathe & Center Your Mind'}
+                ? 'Mind stress-ah relax panna Calming Mini-Games & Resets'
+                : 'Pause, Breathe & Release Academic Pressure'}
             </h2>
 
             <p className="text-xs sm:text-sm text-[#D1E5E6] max-w-xl leading-relaxed">
               {language === 'ta'
-                ? 'தேர்வு பயம், அதிக சிந்தனை அல்லது தூக்கமின்மை ஏற்படும் போது, 2-3 நிமிடங்களில் உங்கள் இதயத் துடிப்பையும் மூளையையும் அமைதிப்படுத்துங்கள்.'
-                : language === 'tanglish'
-                ? 'Exam tension, viva pressure or late night overthinking irukkum pothu gentle exercises to relax instantly.'
-                : 'Science-backed calming micro-sessions curated for student life: rapid vagus nerve reset, kinetic sensory relief, and soothing natural soundscapes.'}
+                ? 'தேர்வு பயம், அதிக சிந்தனை அல்லது தூக்கமின்மை ஏற்படும் போது, அமைதியான மினி-கேம்ஸ் மற்றும் அறிவியல் சுவாசப் பயிற்சிகள் மூலம் மனதை உடனடியாக அமைதிப்படுத்துங்கள்.'
+                : 'Non-competitive calming experiences designed for student pressure: ride past exam thoughts in Mind Ride, grow a breath-powered garden, and release worries into flowing streams.'}
             </p>
           </div>
 
@@ -228,9 +461,59 @@ export const MindRelaxSessionView: React.FC<MindRelaxSessionViewProps> = ({
         </div>
       </div>
 
+      {/* Smart Personalized Relaxation Recommendation & Historical Insights */}
+      <PersonalizedRelaxRecommender
+        latestCheckin={latestCheckin}
+        language={language}
+        onSelectActivity={(actId) => {
+          setSelectedActivity(actId as RelaxActivityId);
+          setSessionActive(true);
+          triggerHaptic(15);
+        }}
+      />
+
+      {/* Category Tabs: Calming Mini-Games vs Classic Resets */}
+      <div className="flex items-center gap-2 border-b border-[#E8E4D9] dark:border-[#223034] pb-3 overflow-x-auto scrollbar-none">
+        <button
+          onClick={() => setActiveTabFilter('games')}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+            activeTabFilter === 'games'
+              ? 'bg-[#4A8B8D] text-white shadow-xs'
+              : 'bg-white dark:bg-[#161E20] text-[#7A756D] dark:text-[#9BA3AF] border border-[#E8E4D9] dark:border-[#223034]'
+          }`}
+        >
+          <Gamepad2 className="w-4 h-4" />
+          <span>Calming Mini-Games (10)</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTabFilter('classic')}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+            activeTabFilter === 'classic'
+              ? 'bg-[#4A8B8D] text-white shadow-xs'
+              : 'bg-white dark:bg-[#161E20] text-[#7A756D] dark:text-[#9BA3AF] border border-[#E8E4D9] dark:border-[#223034]'
+          }`}
+        >
+          <Wind className="w-4 h-4" />
+          <span>Classic Guided Resets (5)</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTabFilter('all')}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+            activeTabFilter === 'all'
+              ? 'bg-[#4A8B8D] text-white shadow-xs'
+              : 'bg-white dark:bg-[#161E20] text-[#7A756D] dark:text-[#9BA3AF] border border-[#E8E4D9] dark:border-[#223034]'
+          }`}
+        >
+          <Sparkles className="w-4 h-4" />
+          <span>All Spaces ({ACTIVITIES.length})</span>
+        </button>
+      </div>
+
       {/* Activity Navigation Pills */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-        {ACTIVITIES.map((act) => {
+        {filteredActivities.map((act) => {
           const Icon = act.icon;
           const isSelected = selectedActivity === act.id;
           return (
@@ -252,13 +535,109 @@ export const MindRelaxSessionView: React.FC<MindRelaxSessionViewProps> = ({
               <span>
                 {language === 'ta' && act.titleTa ? act.titleTa : language === 'tanglish' && act.titleTanglish ? act.titleTanglish : act.title}
               </span>
+              {act.isMiniGame && (
+                <span className={`text-[9px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-white/25 text-white' : 'bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300'}`}>
+                  Game
+                </span>
+              )}
             </button>
           );
         })}
       </div>
 
       {/* Active Selected Interactive Session Container */}
-      <div className="bg-white dark:bg-[#161E20] rounded-[32px] sm:rounded-[36px] border border-[#E8E4D9] dark:border-[#223034] shadow-sm p-4 sm:p-8 relative overflow-hidden transition-all">
+      <div className="bg-white dark:bg-[#161E20] rounded-[32px] sm:rounded-[36px] border border-[#E8E4D9] dark:border-[#223034] shadow-sm p-3 sm:p-6 relative overflow-hidden transition-all">
+        {/* 1. 🚲 Mind Ride — Signature Game */}
+        {selectedActivity === 'mind-ride' && (
+          <MindRideGame
+            language={language}
+            onExit={() => setSelectedActivity('breathing')}
+            onFinishSession={(durationMins) => handleFinishSession(durationMins)}
+          />
+        )}
+
+        {/* 2. 🌱 Calm Garden */}
+        {selectedActivity === 'calm-garden' && (
+          <CalmGardenGame
+            language={language}
+            onExit={() => setSelectedActivity('mind-ride')}
+            onFinishSession={(durationMins) => handleFinishSession(durationMins)}
+          />
+        )}
+
+        {/* 3. 🫧 Worry Bubble River */}
+        {selectedActivity === 'worry-river' && (
+          <WorryRiverGame
+            language={language}
+            onExit={() => setSelectedActivity('mind-ride')}
+            onFinishSession={(durationMins) => handleFinishSession(durationMins)}
+          />
+        )}
+
+        {/* 4. 🌌 Star Breathing */}
+        {selectedActivity === 'star-breathing' && (
+          <StarBreathingGame
+            language={language}
+            onExit={() => setSelectedActivity('mind-ride')}
+            onFinishSession={(durationMins) => handleFinishSession(durationMins)}
+          />
+        )}
+
+        {/* 5. 🪶 Feather Balance */}
+        {selectedActivity === 'feather-balance' && (
+          <FeatherBalanceGame
+            language={language}
+            onExit={() => setSelectedActivity('mind-ride')}
+            onFinishSession={(durationMins) => handleFinishSession(durationMins)}
+          />
+        )}
+
+        {/* 6. 🐠 Calm Aquarium */}
+        {selectedActivity === 'calm-aquarium' && (
+          <CalmAquariumGame
+            language={language}
+            onExit={() => setSelectedActivity('mind-ride')}
+            onFinishSession={(durationMins) => handleFinishSession(durationMins)}
+          />
+        )}
+
+        {/* 7. 🌊 Wave Sync */}
+        {selectedActivity === 'wave-sync' && (
+          <WaveSyncGame
+            language={language}
+            onExit={() => setSelectedActivity('mind-ride')}
+            onFinishSession={(durationMins) => handleFinishSession(durationMins)}
+          />
+        )}
+
+        {/* 8. 🧩 Focus Flow */}
+        {selectedActivity === 'focus-flow' && (
+          <FocusFlowGame
+            language={language}
+            onExit={() => setSelectedActivity('mind-ride')}
+            onFinishSession={(durationMins) => handleFinishSession(durationMins)}
+          />
+        )}
+
+        {/* 9. ☁️ Cloud Release */}
+        {selectedActivity === 'cloud-release' && (
+          <CloudReleaseGame
+            language={language}
+            onExit={() => setSelectedActivity('mind-ride')}
+            onFinishSession={(durationMins) => handleFinishSession(durationMins)}
+          />
+        )}
+
+        {/* 10. ✨ Light Trail */}
+        {selectedActivity === 'light-trail' && (
+          <LightTrailGame
+            language={language}
+            onExit={() => setSelectedActivity('mind-ride')}
+            onFinishSession={(durationMins) => handleFinishSession(durationMins)}
+          />
+        )}
+
+        {/* 11. 4-7-8 Breathing (Classic) */}
         {selectedActivity === 'breathing' && (
           <BreathingExerciseInteractive
             language={language}
@@ -269,18 +648,20 @@ export const MindRelaxSessionView: React.FC<MindRelaxSessionViewProps> = ({
               setSessionActive(!sessionActive);
             }}
             elapsedSeconds={elapsedSeconds}
-            onFinish={handleFinishSession}
+            onFinish={() => handleFinishSession()}
           />
         )}
 
+        {/* 12. Bubble Popper (Classic) */}
         {selectedActivity === 'bubble-pop' && (
           <BubblePopperInteractive
             language={language}
             triggerHaptic={triggerHaptic}
-            onSessionDone={handleFinishSession}
+            onSessionDone={() => handleFinishSession()}
           />
         )}
 
+        {/* 13. Ambient Soundscapes (Classic) */}
         {selectedActivity === 'ambient-soundscape' && (
           <AmbientSoundscapeInteractive
             language={language}
@@ -288,14 +669,16 @@ export const MindRelaxSessionView: React.FC<MindRelaxSessionViewProps> = ({
           />
         )}
 
+        {/* 14. 5-4-3-2-1 Grounding (Classic) */}
         {selectedActivity === 'grounding' && (
           <SensoryGroundingInteractive
             language={language}
             triggerHaptic={triggerHaptic}
-            onFinish={handleFinishSession}
+            onFinish={() => handleFinishSession()}
           />
         )}
 
+        {/* 15. Zen Sand Kinetic (Classic) */}
         {selectedActivity === 'zen-doodle' && (
           <ZenSandDrawingInteractive
             language={language}
@@ -304,7 +687,7 @@ export const MindRelaxSessionView: React.FC<MindRelaxSessionViewProps> = ({
         )}
       </div>
 
-      {/* Benefits & Tips for Students */}
+      {/* Benefits & Evidence Guidance for Students */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 sm:p-5 bg-white dark:bg-[#161E20] rounded-[24px] border border-[#E8E4D9] dark:border-[#223034] space-y-1.5 shadow-2xs">
           <div className="w-8 h-8 rounded-full bg-[#F0EDE4] dark:bg-[#253235] flex items-center justify-center text-[#4A8B8D] dark:text-[#63C1C4]">
@@ -312,7 +695,7 @@ export const MindRelaxSessionView: React.FC<MindRelaxSessionViewProps> = ({
           </div>
           <h4 className="font-bold text-xs sm:text-sm text-[#2D2D2B] dark:text-[#F3F6F8]">Before Exam or Viva</h4>
           <p className="text-[11px] sm:text-xs text-[#7A756D] dark:text-[#9BA3AF] leading-relaxed">
-            Use 2 minutes of 4-7-8 breathing right outside the hall to lower cortisol and stop hand tremors.
+            Use 2 minutes of <strong>Mind Ride</strong> or <strong>4-7-8 breathing</strong> right outside the hall to lower cortisol and steady hand tremors.
           </p>
         </div>
 
@@ -322,7 +705,7 @@ export const MindRelaxSessionView: React.FC<MindRelaxSessionViewProps> = ({
           </div>
           <h4 className="font-bold text-xs sm:text-sm text-[#2D2D2B] dark:text-[#F3F6F8]">Late Night Overthinking</h4>
           <p className="text-[11px] sm:text-xs text-[#7A756D] dark:text-[#9BA3AF] leading-relaxed">
-            Play Monsoon Rain soundscapes + 5-4-3-2-1 sensory grounding to break repetitive thoughts.
+            Float worries down the <strong>Worry River</strong> or drift thoughts via <strong>Cloud Release</strong> to safely interrupt repetitive mental loops.
           </p>
         </div>
 
@@ -330,18 +713,29 @@ export const MindRelaxSessionView: React.FC<MindRelaxSessionViewProps> = ({
           <div className="w-8 h-8 rounded-full bg-[#EBF5EE] dark:bg-[#13261C] flex items-center justify-center text-[#3B7A57]">
             <Smile className="w-4 h-4" />
           </div>
-          <h4 className="font-bold text-xs sm:text-sm text-[#2D2D2B] dark:text-[#F3F6F8]">Screen Fatigue Reset</h4>
+          <h4 className="font-bold text-xs sm:text-sm text-[#2D2D2B] dark:text-[#F3F6F8]">Screen & Lab Fatigue</h4>
           <p className="text-[11px] sm:text-xs text-[#7A756D] dark:text-[#9BA3AF] leading-relaxed">
-            Pop bubble worries or trace the glowing sand ripples for 60 seconds after continuous coding.
+            Trace <strong>Light Trails</strong> or watch the tranquil <strong>Calm Aquarium</strong> for 60 seconds after continuous coding.
           </p>
         </div>
       </div>
+
+      {/* Closed-Loop Post-Session Feedback Modal */}
+      <RelaxFeedbackModal
+        isOpen={feedbackModalOpen}
+        gameId={selectedActivity}
+        gameTitle={activeActivityObj.title}
+        durationMinutes={Math.max(1, Math.round(elapsedSeconds / 60))}
+        language={language}
+        onClose={() => setFeedbackModalOpen(false)}
+        onSubmitFeedback={handleSaveFeedback}
+      />
     </div>
   );
 };
 
 /* =========================================================================
-   1. Interactive 4-7-8 Breathing Pacer with Sound Tones & Animation
+   Classic 1: Interactive 4-7-8 Breathing Pacer with Sound Tones & Animation
    ========================================================================= */
 interface BreathingProps {
   language: AppLanguage;
@@ -360,13 +754,12 @@ const BreathingExerciseInteractive: React.FC<BreathingProps> = ({
   elapsedSeconds,
   onFinish,
 }) => {
-  const [phaseIndex, setPhaseIndex] = useState<0 | 1 | 2>(0); // 0 = Inhale (4s), 1 = Hold (7s), 2 = Exhale (8s)
+  const [phaseIndex, setPhaseIndex] = useState<0 | 1 | 2>(0);
   const [phaseCountdown, setPhaseCountdown] = useState(4);
   const [completedCycles, setCompletedCycles] = useState(0);
   const [soundMuted, setSoundMuted] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
 
-  // Audio gentle chime synthesis
   const playTone = (frequency: number, duration: number) => {
     if (soundMuted) return;
     try {
@@ -400,19 +793,15 @@ const BreathingExerciseInteractive: React.FC<BreathingProps> = ({
       timer = setInterval(() => {
         setPhaseCountdown((prev) => {
           if (prev <= 1) {
-            // Transition phase
             if (phaseIndex === 0) {
-              // From Inhale (4) -> Hold (7)
               setPhaseIndex(1);
               playTone(520, 1.2);
               return 7;
             } else if (phaseIndex === 1) {
-              // From Hold (7) -> Exhale (8)
               setPhaseIndex(2);
               playTone(390, 1.8);
               return 8;
             } else {
-              // From Exhale (8) -> Inhale (4)
               setPhaseIndex(0);
               setCompletedCycles((c) => c + 1);
               playTone(440, 1.5);
@@ -462,7 +851,6 @@ const BreathingExerciseInteractive: React.FC<BreathingProps> = ({
 
   return (
     <div className="flex flex-col items-center justify-center space-y-6 py-4">
-      {/* Controls Bar: Sound Toggle & Cycles */}
       <div className="w-full flex items-center justify-between px-2">
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold text-[#7A756D] dark:text-[#9BA3AF] px-3 py-1 bg-[#F0EDE4] dark:bg-[#253235] rounded-full">
@@ -484,9 +872,7 @@ const BreathingExerciseInteractive: React.FC<BreathingProps> = ({
         </button>
       </div>
 
-      {/* Main Breathing Orb */}
       <div className="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center my-4">
-        {/* Outer Glow Halo Rings */}
         <motion.div
           animate={{
             scale: sessionActive ? (phaseIndex === 0 ? 1.4 : phaseIndex === 1 ? 1.4 : 0.8) : 1,
@@ -496,7 +882,6 @@ const BreathingExerciseInteractive: React.FC<BreathingProps> = ({
           className={`absolute inset-0 rounded-full ${details.bgColor} blur-2xl`}
         />
 
-        {/* Outer Pulsing Border */}
         <motion.div
           animate={{
             scale: sessionActive ? (phaseIndex === 0 ? 1.25 : phaseIndex === 1 ? 1.25 : 0.85) : 1,
@@ -505,7 +890,6 @@ const BreathingExerciseInteractive: React.FC<BreathingProps> = ({
           className="absolute inset-4 rounded-full border-2 border-dashed border-[#4A8B8D]/40"
         />
 
-        {/* Central Core Breathing Orb */}
         <motion.div
           animate={{
             scale: sessionActive ? details.scale : 1,
@@ -534,7 +918,6 @@ const BreathingExerciseInteractive: React.FC<BreathingProps> = ({
         </motion.div>
       </div>
 
-      {/* Dynamic Subtitles & Guidance */}
       <div className="text-center space-y-1 max-w-sm">
         <h3 className="font-serif italic text-xl font-bold text-[#2D2D2B] dark:text-[#F3F6F8]">
           {sessionActive ? details.title : '4-7-8 Relaxation Loop'}
@@ -544,7 +927,6 @@ const BreathingExerciseInteractive: React.FC<BreathingProps> = ({
         </p>
       </div>
 
-      {/* Action Buttons */}
       <div className="flex items-center gap-3 w-full max-w-xs pt-2">
         <button
           onClick={onToggleSession}
@@ -581,7 +963,7 @@ const BreathingExerciseInteractive: React.FC<BreathingProps> = ({
 };
 
 /* =========================================================================
-   2. Tactile Stress Bubble Popper with Sound Effects
+   Classic 2: Tactile Stress Bubble Popper
    ========================================================================= */
 interface Bubble {
   id: string;
@@ -703,7 +1085,6 @@ const BubblePopperInteractive: React.FC<{
         </div>
       </div>
 
-      {/* Bubble Playground Field */}
       <div className="relative min-h-[300px] sm:min-h-[360px] bg-[#F9F7F2] dark:bg-[#12191B] rounded-[28px] border border-[#E8E4D9] dark:border-[#223034] p-4 flex flex-wrap items-center justify-center gap-3 sm:gap-4 overflow-hidden select-none">
         {bubbles.map((b) => {
           if (b.popped) {
@@ -762,7 +1143,7 @@ const BubblePopperInteractive: React.FC<{
 };
 
 /* =========================================================================
-   3. Generative Ambient Campus Soundscapes (Monsoon, Tea Stall, Waves)
+   Classic 3: Generative Ambient Soundscapes
    ========================================================================= */
 interface SoundTrack {
   id: string;
@@ -852,7 +1233,6 @@ const AmbientSoundscapeInteractive: React.FC<{
       masterGain.connect(audioCtxRef.current.destination);
 
       if (trackId === 'monsoon' || trackId === 'breeze' || trackId === 'waves') {
-        // Pink / White Noise Generator for rain / breeze
         const bufferSize = audioCtxRef.current.sampleRate * 2;
         const noiseBuffer = audioCtxRef.current.createBuffer(1, bufferSize, audioCtxRef.current.sampleRate);
         const output = noiseBuffer.getChannelData(0);
@@ -879,7 +1259,6 @@ const AmbientSoundscapeInteractive: React.FC<{
 
         soundNodesRef.current = { gain: masterGain, noise: whiteNoise };
       } else if (trackId === 'temple') {
-        // 432Hz Pure Zen Harmonic Oscillator
         const osc = audioCtxRef.current.createOscillator();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(432, audioCtxRef.current.currentTime);
@@ -930,7 +1309,6 @@ const AmbientSoundscapeInteractive: React.FC<{
           </p>
         </div>
 
-        {/* Master Volume Slider */}
         <div className="flex items-center gap-2 bg-[#F0EDE4] dark:bg-[#253235] px-3 py-1.5 rounded-full self-start sm:self-auto">
           <Volume2 className="w-4 h-4 text-[#4A8B8D] dark:text-[#63C1C4]" />
           <input
@@ -951,7 +1329,6 @@ const AmbientSoundscapeInteractive: React.FC<{
         </div>
       </div>
 
-      {/* Grid of Soundscapes */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {SOUND_TRACKS.map((t) => {
           const Icon = t.icon;
@@ -1005,7 +1382,7 @@ const AmbientSoundscapeInteractive: React.FC<{
 };
 
 /* =========================================================================
-   4. 5-4-3-2-1 Sensory Grounding Walkthrough
+   Classic 4: 5-4-3-2-1 Sensory Grounding Walkthrough
    ========================================================================= */
 const GROUNDING_STEPS = [
   {
@@ -1072,7 +1449,6 @@ const SensoryGroundingInteractive: React.FC<{
 
   return (
     <div className="space-y-6 max-w-lg mx-auto py-2">
-      {/* Step Indicators */}
       <div className="flex items-center justify-between gap-2">
         {GROUNDING_STEPS.map((s, idx) => (
           <div
@@ -1084,7 +1460,6 @@ const SensoryGroundingInteractive: React.FC<{
         ))}
       </div>
 
-      {/* Main Grounding Card */}
       <motion.div
         key={currentStepIdx}
         initial={{ opacity: 0, x: 20 }}
@@ -1115,7 +1490,6 @@ const SensoryGroundingInteractive: React.FC<{
         </div>
       </motion.div>
 
-      {/* Navigation Buttons */}
       <div className="flex items-center gap-3">
         {currentStepIdx > 0 && (
           <button
@@ -1139,7 +1513,7 @@ const SensoryGroundingInteractive: React.FC<{
 };
 
 /* =========================================================================
-   5. Zen Sand Glowing Canvas Finger Flow
+   Classic 5: Zen Sand Glowing Canvas Finger Flow
    ========================================================================= */
 const ZenSandDrawingInteractive: React.FC<{
   language: AppLanguage;
@@ -1154,17 +1528,14 @@ const ZenSandDrawingInteractive: React.FC<{
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set high DPI canvas
     const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width * window.devicePixelRatio;
     canvas.height = 320 * window.devicePixelRatio;
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 
-    // Initial Warm Zen Sand Base
     ctx.fillStyle = '#22282A';
     ctx.fillRect(0, 0, rect.width, 320);
 
-    // Draw peaceful ripple rings
     ctx.strokeStyle = '#4A8B8D25';
     ctx.lineWidth = 2;
     for (let r = 20; r < 200; r += 25) {
@@ -1207,7 +1578,6 @@ const ZenSandDrawingInteractive: React.FC<{
     ctx.arc(x, y, 6, 0, Math.PI * 2);
     ctx.fill();
 
-    // Subtle glowing wave around finger touch
     ctx.strokeStyle = '#F5D5CB50';
     ctx.lineWidth = 1.5;
     ctx.beginPath();

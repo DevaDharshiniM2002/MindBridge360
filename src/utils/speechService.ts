@@ -123,39 +123,69 @@ if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
   loadVoices();
 }
 
-export function findBestVoice(language: AppLanguage): { voice: SpeechSynthesisVoice | null; langCode: string; useTransliteration: boolean } {
+export function findBestVoice(
+  language: AppLanguage,
+  gender: 'female' | 'male' = 'female'
+): { voice: SpeechSynthesisVoice | null; langCode: string; useTransliteration: boolean } {
   const voices = cachedVoices.length > 0 ? cachedVoices : (typeof window !== 'undefined' && 'speechSynthesis' in window ? window.speechSynthesis.getVoices() : []);
 
+  const isFemale = gender === 'female';
+
   if (language === 'ta') {
-    // 1. Look for native Tamil voice (e.g., ta-IN, ta_LK, Google தமிழ், Tamil India, etc.)
-    const tamilVoice = voices.find(v => 
+    // 1. Look for native Tamil voice
+    const tamilVoices = voices.filter(v => 
       v.lang.toLowerCase().startsWith('ta') || 
       v.lang.toLowerCase().includes('tam') ||
       v.name.toLowerCase().includes('tamil') ||
       v.name.toLowerCase().includes('தமிழ்')
     );
 
-    if (tamilVoice) {
-      return { voice: tamilVoice, langCode: 'ta-IN', useTransliteration: false };
+    if (tamilVoices.length > 0) {
+      // If female preferred, try female named voice
+      const preferred = tamilVoices.find(v => {
+        const lower = v.name.toLowerCase();
+        return isFemale ? (lower.includes('female') || lower.includes('valluvar') || lower.includes('vani') || !lower.includes('male')) : lower.includes('male');
+      }) || tamilVoices[0];
+      return { voice: preferred, langCode: 'ta-IN', useTransliteration: false };
     }
 
     // 2. Fallback: If device lacks Tamil TTS voice engine, pick Indian English or smooth English voice with phonetics
-    const indianEnglishVoice = voices.find(v => v.lang.toLowerCase().includes('en-in') || v.lang.toLowerCase().includes('en_in') || v.name.toLowerCase().includes('india'));
-    const anyEnglishVoice = indianEnglishVoice || voices.find(v => v.lang.toLowerCase().startsWith('en')) || voices[0] || null;
+    const indianVoices = voices.filter(v => v.lang.toLowerCase().includes('en-in') || v.lang.toLowerCase().includes('en_in') || v.name.toLowerCase().includes('india'));
+    const matchedIndian = indianVoices.find(v => {
+      const lower = v.name.toLowerCase();
+      return isFemale ? (lower.includes('female') || lower.includes('heera') || lower.includes('veena') || lower.includes('priya')) : (lower.includes('male') || lower.includes('ravi') || lower.includes('prabhat'));
+    }) || indianVoices[0];
 
-    return { voice: anyEnglishVoice, langCode: 'en-IN', useTransliteration: true };
+    const anyEnglish = matchedIndian || voices.find(v => v.lang.toLowerCase().startsWith('en')) || voices[0] || null;
+
+    return { voice: anyEnglish, langCode: 'en-IN', useTransliteration: true };
   }
 
   if (language === 'tanglish') {
-    // Tanglish sounds best on Indian English or clear English voice with smooth tempo
-    const indianEnglish = voices.find(v => v.lang.toLowerCase().includes('en-in') || v.name.toLowerCase().includes('india'));
-    const englishVoice = indianEnglish || voices.find(v => v.lang.toLowerCase().startsWith('en')) || voices[0] || null;
+    const indianVoices = voices.filter(v => v.lang.toLowerCase().includes('en-in') || v.name.toLowerCase().includes('india'));
+    const matchedIndian = indianVoices.find(v => {
+      const lower = v.name.toLowerCase();
+      return isFemale ? (lower.includes('female') || lower.includes('zira') || lower.includes('samantha')) : (lower.includes('male') || lower.includes('david') || lower.includes('ravi'));
+    }) || indianVoices[0];
+
+    const englishVoice = matchedIndian || voices.find(v => v.lang.toLowerCase().startsWith('en')) || voices[0] || null;
     return { voice: englishVoice, langCode: 'en-IN', useTransliteration: false };
   }
 
   // English (en)
-  const englishIndian = voices.find(v => v.lang.toLowerCase().includes('en-in') || v.name.toLowerCase().includes('india'));
-  const naturalEnglish = englishIndian || voices.find(v => v.lang.toLowerCase().startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Premium'))) || voices.find(v => v.lang.toLowerCase().startsWith('en')) || voices[0] || null;
+  const indianVoices = voices.filter(v => v.lang.toLowerCase().includes('en-in') || v.name.toLowerCase().includes('india'));
+  const matchedVoice = indianVoices.find(v => {
+    const lower = v.name.toLowerCase();
+    return isFemale ? (lower.includes('female') || lower.includes('natural')) : lower.includes('male');
+  }) || indianVoices[0];
+
+  const naturalEnglish = matchedVoice || voices.find(v => {
+    const lower = v.name.toLowerCase();
+    const isLangEn = v.lang.toLowerCase().startsWith('en');
+    if (!isLangEn) return false;
+    return isFemale ? (lower.includes('female') || lower.includes('samantha') || lower.includes('zira') || lower.includes('victoria')) : (lower.includes('male') || lower.includes('david') || lower.includes('george'));
+  }) || voices.find(v => v.lang.toLowerCase().startsWith('en')) || voices[0] || null;
+
   return { voice: naturalEnglish, langCode: 'en-IN', useTransliteration: false };
 }
 
@@ -164,19 +194,71 @@ export interface SpeakOptions {
   language: AppLanguage;
   tone?: CompanionTone;
   avatar?: CompanionAvatarType;
+  gender?: 'female' | 'male';
+  voicePitch?: number;
   onStart?: () => void;
   onEnd?: () => void;
   onError?: (err: any) => void;
+  onViseme?: (visemeIndex: number) => void;
+}
+
+// Play soft calming audio chimes for voice feedback (Web Audio API)
+export function playToneCue(type: 'listen' | 'speak' | 'end' = 'listen') {
+  if (typeof window === 'undefined') return;
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    const now = ctx.currentTime;
+    if (type === 'listen') {
+      // Soft uplifting chime (E5 -> G#5)
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(659.25, now);
+      osc.frequency.exponentialRampToValueAtTime(830.61, now + 0.12);
+      gain.gain.setValueAtTime(0.06, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      osc.start(now);
+      osc.stop(now + 0.26);
+    } else if (type === 'speak') {
+      // Gentle ready chime (A5)
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, now);
+      gain.gain.setValueAtTime(0.05, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+      osc.start(now);
+      osc.stop(now + 0.19);
+    } else {
+      // Soft calming outro (G4 -> E4)
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(392.00, now);
+      osc.frequency.exponentialRampToValueAtTime(329.63, now + 0.18);
+      gain.gain.setValueAtTime(0.05, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc.start(now);
+      osc.stop(now + 0.31);
+    }
+  } catch (e) {
+    // Audio Context might require user interaction, silently ignore
+  }
 }
 
 export function speakText({
   text,
   language,
   tone = 'gentle',
-  avatar = 'blob',
+  avatar = 'mithra',
+  gender = 'female',
+  voicePitch,
   onStart,
   onEnd,
   onError,
+  onViseme,
 }: SpeakOptions): boolean {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
     onError?.(new Error('Speech synthesis not supported on this browser.'));
@@ -197,7 +279,8 @@ export function speakText({
       return false;
     }
 
-    const { voice, langCode, useTransliteration } = findBestVoice(language);
+    const effectiveGender = avatar === 'mithran' ? 'male' : (gender || (avatar === 'mithra' ? 'female' : 'female'));
+    const { voice, langCode, useTransliteration } = findBestVoice(language, effectiveGender);
 
     // If Tamil and no Tamil voice installed in browser, transliterate to phonetic Tanglish
     if (language === 'ta' && useTransliteration) {
@@ -211,34 +294,75 @@ export function speakText({
       utterance.voice = voice;
     }
 
-    // Set natural rate and pitch based on companion tone and avatar
+    // Set natural rate and pitch based on companion tone, gender and avatar
     if (tone === 'gentle') {
-      utterance.rate = 0.88;
+      utterance.rate = 0.90;
     } else if (tone === 'upbeat') {
       utterance.rate = 1.02;
     } else {
       utterance.rate = 0.95;
     }
 
-    if (avatar === 'blob') {
+    if (voicePitch !== undefined) {
+      utterance.pitch = voicePitch;
+    } else if (avatar === 'mithra') {
+      utterance.pitch = 1.08;
+    } else if (avatar === 'mithran') {
+      utterance.pitch = 0.92;
+    } else if (avatar === 'blob') {
       utterance.pitch = 1.1;
     } else if (avatar === 'owl') {
       utterance.pitch = 0.95;
     } else if (avatar === 'sprout') {
       utterance.pitch = 1.05;
     } else {
-      utterance.pitch = 1.0;
+      utterance.pitch = effectiveGender === 'female' ? 1.05 : 0.92;
     }
 
+    let visemeInterval: NodeJS.Timeout | null = null;
+
+    const startVisemeLoop = () => {
+      if (!onViseme) return;
+      const visemes = [1, 2, 0, 3, 5, 1, 4, 2, 3, 0];
+      let idx = 0;
+      visemeInterval = setInterval(() => {
+        idx = (idx + 1) % visemes.length;
+        onViseme(visemes[idx]);
+      }, 130);
+    };
+
+    const stopVisemeLoop = () => {
+      if (visemeInterval) {
+        clearInterval(visemeInterval);
+        visemeInterval = null;
+      }
+      onViseme?.(0);
+    };
+
     utterance.onstart = () => {
+      startVisemeLoop();
       onStart?.();
     };
 
+    utterance.onboundary = (event) => {
+      if (event.name === 'word' && onViseme) {
+        const char = cleaned[event.charIndex]?.toLowerCase() || 'a';
+        if (['a', 'aa', 'ா', 'அ', 'ஆ'].includes(char)) onViseme(1);
+        else if (['o', 'u', 'oo', 'ொ', 'ோ', 'ஒ', 'ஓ', 'உ'].includes(char)) onViseme(2);
+        else if (['e', 'i', 'ee', 'ெ', 'ே', 'ை', 'இ', 'ஈ', 'எ', 'ஏ'].includes(char)) onViseme(3);
+        else if (['m', 'p', 'b', 'ம', 'ப'].includes(char)) onViseme(4);
+        else if (['t', 'd', 'th', 'l', 'த', 'ட', 'ல', 'ழ', 'ள'].includes(char)) onViseme(5);
+        else onViseme(1);
+      }
+    };
+
     utterance.onend = () => {
+      stopVisemeLoop();
       onEnd?.();
     };
 
     utterance.onerror = (e) => {
+      stopVisemeLoop();
       // Ignore normal cancel interruptions
       if (e.error === 'canceled' || e.error === 'interrupted') {
         onEnd?.();

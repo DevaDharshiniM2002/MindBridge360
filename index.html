@@ -3,12 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>MindBridge 360 | Student Wellbeing</title>
-    <meta name="description" content="A privacy-first, non-clinical student wellbeing platform for Indian college students." />
+    <title>MindMitra | Understand. Relax. Talk. Get Support.</title>
+    <meta name="description" content="MindMitra - Understand. Relax. Talk. Get Support. AI-powered student wellbeing and early-intervention platform." />
+    <meta property="og:title" content="MindMitra | Understand. Relax. Talk. Get Support." />
+    <meta property="og:description" content="Understand. Relax. Talk. Get Support. Student wellbeing and early-intervention platform." />
     <meta name="theme-color" content="#4A8B8D" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="MindBridge" />
+    <meta name="apple-mobile-web-app-title" content="MindMitra" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,7 +20,7 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      if ('serviceWorker' in navigator && process?.env?.NODE_ENV === 'production') {
+      if ('serviceWorker' in navigator && typeof window !== 'undefined' && window.location.protocol === 'https:') {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js').catch((err) => {
             console.log('SW registration note:', err);

@@ -1,6 +1,6 @@
 {
-  "name": "MindBridge 360",
-  "description": "A privacy-first, non-clinical student wellbeing platform for Indian college students with an expressive companion, peer support, and aggregated campus insights.",
+  "name": "MindMitra",
+  "description": "Understand. Relax. Talk. Get Support. AI-powered student wellbeing and early-intervention platform.",
   "requestFramePermissions": ["microphone"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

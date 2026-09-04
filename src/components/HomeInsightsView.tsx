@@ -39,10 +39,24 @@ import {
   BarChart3,
   Layers,
   ChevronRight,
+  ShieldCheck,
 } from 'lucide-react';
-import { CheckinData, FutureMessage, CompanionConfig, AppLanguage } from '../types';
+import {
+  CheckinData,
+  FutureMessage,
+  CompanionConfig,
+  AppLanguage,
+  AcademicEvent,
+  StressForecast,
+  PersonalCopingProfile,
+  InterventionOutcome,
+  InterventionType,
+} from '../types';
 import { CompanionAvatar } from './CompanionAvatar';
 import { I18N_TEXT } from '../data/mockData';
+import { StressForecastRadar } from './StressForecastRadar';
+import { PersonalCopingEngineCard } from './PersonalCopingEngineCard';
+import { SmartEscalationBanner } from './SmartEscalationBanner';
 
 interface HomeInsightsViewProps {
   checkins: CheckinData[];
@@ -53,6 +67,16 @@ interface HomeInsightsViewProps {
   onOpenCheckin: () => void;
   onOpenCompanionChat: () => void;
   onOpenRelax?: () => void;
+  forecast: StressForecast;
+  academicEvents: AcademicEvent[];
+  onAddAcademicEvent: (event: AcademicEvent) => void;
+  onDeleteAcademicEvent: (id: string) => void;
+  copingProfile: PersonalCopingProfile;
+  interventionOutcomes: InterventionOutcome[];
+  onSelectIntervention: (type: InterventionType) => void;
+  onOpenMoment: () => void;
+  onOpenCounsellorBooking: () => void;
+  onOpenCrisisBar: () => void;
 }
 
 export const HomeInsightsView: React.FC<HomeInsightsViewProps> = ({
@@ -64,6 +88,16 @@ export const HomeInsightsView: React.FC<HomeInsightsViewProps> = ({
   onOpenCheckin,
   onOpenCompanionChat,
   onOpenRelax,
+  forecast,
+  academicEvents,
+  onAddAcademicEvent,
+  onDeleteAcademicEvent,
+  copingProfile,
+  interventionOutcomes,
+  onSelectIntervention,
+  onOpenMoment,
+  onOpenCounsellorBooking,
+  onOpenCrisisBar,
 }) => {
   const safeCompanion = companion || { name: 'Mithra', avatar: 'blob', tone: 'gentle', voiceEnabled: true };
   const t = I18N_TEXT[language] || I18N_TEXT.en;
@@ -223,6 +257,7 @@ export const HomeInsightsView: React.FC<HomeInsightsViewProps> = ({
 
   // Selected Day Details for the interactive bottom panel
   const activeDayDetail = selectedDayIndex !== null ? weekData[selectedDayIndex] : weekData[weekData.length - 1];
+  const latestTodayCheckin = checkins && checkins.length > 0 ? checkins[checkins.length - 1] : null;
 
   const handleCreateFutureMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -289,48 +324,223 @@ export const HomeInsightsView: React.FC<HomeInsightsViewProps> = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 pb-12">
-      {/* 1. Companion Welcome & Gentle Status */}
-      <div className="bg-white dark:bg-[#192225] rounded-[36px] sm:rounded-[40px] p-6 sm:p-8 shadow-sm border border-[#E8E4D9] dark:border-[#2B383C] flex flex-col sm:flex-row items-center justify-between gap-6 transition-colors">
-        <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-5">
-          <div className="p-4 bg-[#D1E5E6]/40 dark:bg-[#193639] rounded-[28px] border border-[#4A8B8D]/20 dark:border-[#4A8B8D]/40 shrink-0">
-            <CompanionAvatar avatar={safeCompanion.avatar} emotion="happy" size="lg" />
-          </div>
-          <div>
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mb-1.5">
-              <h2 className="font-serif italic text-2xl sm:text-3xl font-normal text-[#2D2D2B] dark:text-[#F8FAFC]">
-                'Good day, friend.'
-              </h2>
-              <span className="text-xs px-3 py-1 bg-[#F0EDE4] dark:bg-[#161D20] text-[#4A8B8D] dark:text-[#63C1C4] font-bold border border-[#E8E4D9] dark:border-[#2B383C] rounded-full">
-                Private Sanctuary
-              </span>
+    <div className="max-w-4xl mx-auto space-y-7 pb-12">
+      {/* 🌟 1. HOME HERO: Welcome, Emotional Pulse, Status & Quick Action Hub */}
+      <div className="bg-linear-to-br from-[#4A8B8D]/15 via-white to-[#E98A72]/10 dark:from-[#192225] dark:via-[#161D20] dark:to-[#221C1B] rounded-3xl sm:rounded-[36px] p-5 sm:p-7 border border-[#E8E4D9] dark:border-[#2B383C] shadow-xs space-y-5 transition-colors">
+        {/* Companion Welcome & Greeting */}
+        <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4">
+          <div className="flex items-center gap-4 text-center sm:text-left">
+            <div className="p-3 bg-[#D1E5E6]/50 dark:bg-[#193639] rounded-2xl border border-[#4A8B8D]/20 shrink-0 shadow-2xs">
+              <CompanionAvatar avatar={safeCompanion.avatar} emotion="happy" size="md" />
             </div>
-            <p className="text-sm text-[#7A756D] dark:text-[#9DB0B5] leading-relaxed max-w-lg">
-              {weekAverages.avgStress > 3.5
-                ? `I noticed your rhythm reflects higher academic pressure this week (Stress avg: ${weekAverages.avgStress}/5). ${safeCompanion.name} is here whenever you'd like a 2-minute breathing pause or a calm moment.`
-                : `${safeCompanion.name} is with you today. Your 7-day mood average is ${weekAverages.avgMood}/5 — you are cultivating a peaceful, self-compassionate rhythm.`}
-            </p>
+            <div>
+              <div className="flex items-center justify-center sm:justify-start gap-2">
+                <h2 className="font-serif font-bold text-xl sm:text-2xl text-[#2D2D2B] dark:text-[#F8FAFC]">
+                  MindMitra Home
+                </h2>
+                <span className="text-[10px] uppercase font-bold px-2 py-0.5 bg-[#4A8B8D]/15 text-[#4A8B8D] dark:text-[#63C1C4] rounded-full">
+                  Campus Wellbeing
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-[#7A756D] dark:text-[#9DB0B5] mt-0.5">
+                Understand. Relax. Talk. Get Support.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 self-center sm:self-auto">
+            <button
+              id="home-moment-cta"
+              onClick={onOpenMoment}
+              className="py-2 px-4 bg-linear-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white rounded-2xl font-bold text-xs shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 whitespace-nowrap"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-teal-200" />
+              <span>60s Moment</span>
+            </button>
+            <button
+              id="home-checkin-cta"
+              onClick={onOpenCheckin}
+              className="py-2 px-4 bg-[#4A8B8D] hover:bg-[#376F71] active:scale-95 text-white rounded-2xl font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+            >
+              <Activity className="w-3.5 h-3.5" />
+              <span>Log Pulse</span>
+            </button>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto shrink-0">
+        {/* 📊 Today's Emotional Pulse & 3 Core Vital Tiles */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          {/* Today's Emotional Pulse */}
+          <div className="bg-white/95 dark:bg-[#1E292B]/95 p-3.5 rounded-2xl border border-[#E8E4D9]/80 dark:border-[#2F3D42]/80 shadow-2xs flex flex-col justify-between">
+            <span className="text-[11px] font-semibold text-[#7A756D] dark:text-[#9DB0B5] flex items-center gap-1">
+              <Smile className="w-3.5 h-3.5 text-[#4A8B8D]" /> Emotional Pulse
+            </span>
+            <div className="mt-1 flex items-baseline gap-1.5">
+              <span className="text-xl font-bold text-[#2D2D2B] dark:text-[#F8FAFC]">
+                {latestTodayCheckin ? `${weekAverages.avgMood}/5` : 'Balanced'}
+              </span>
+            </div>
+            <span className="text-[10px] text-[#4A8B8D] dark:text-[#63C1C4] font-medium truncate mt-0.5">
+              {latestTodayCheckin ? 'Logged today' : 'Tap Log Pulse'}
+            </span>
+          </div>
+
+          {/* Current Stress Level */}
+          <div className="bg-white/95 dark:bg-[#1E292B]/95 p-3.5 rounded-2xl border border-[#E8E4D9]/80 dark:border-[#2F3D42]/80 shadow-2xs flex flex-col justify-between">
+            <span className="text-[11px] font-semibold text-[#7A756D] dark:text-[#9DB0B5] flex items-center gap-1">
+              <TrendingUp className="w-3.5 h-3.5 text-[#E98A72]" /> Stress Level
+            </span>
+            <div className="mt-1 flex items-baseline gap-1.5">
+              <span className="text-xl font-bold font-mono text-[#2D2D2B] dark:text-[#F8FAFC]">
+                {weekAverages.avgStress}
+              </span>
+              <span className="text-[10px] text-[#7A756D]">/ 5.0</span>
+            </div>
+            <span className="text-[10px] text-[#E98A72] font-medium truncate mt-0.5">
+              {weekAverages.avgStress > 3.2 ? '⚡ Elevated Pressure' : '🌿 Normal Baseline'}
+            </span>
+          </div>
+
+          {/* Sleep Quality */}
+          <div className="bg-white/95 dark:bg-[#1E292B]/95 p-3.5 rounded-2xl border border-[#E8E4D9]/80 dark:border-[#2F3D42]/80 shadow-2xs flex flex-col justify-between">
+            <span className="text-[11px] font-semibold text-[#7A756D] dark:text-[#9DB0B5] flex items-center gap-1">
+              <BedDouble className="w-3.5 h-3.5 text-indigo-500" /> Sleep Rhythm
+            </span>
+            <div className="mt-1 flex items-baseline gap-1.5">
+              <span className="text-xl font-bold font-mono text-[#2D2D2B] dark:text-[#F8FAFC]">
+                {weekAverages.avgRest}
+              </span>
+              <span className="text-[10px] text-[#7A756D]">/ 5.0</span>
+            </div>
+            <span className="text-[10px] text-indigo-500 font-medium truncate mt-0.5">
+              {weekAverages.avgRest >= 3.5 ? '✨ Good Rest' : '😴 Mild Sleep Debt'}
+            </span>
+          </div>
+
+          {/* Energy Vitality */}
+          <div className="bg-white/95 dark:bg-[#1E292B]/95 p-3.5 rounded-2xl border border-[#E8E4D9]/80 dark:border-[#2F3D42]/80 shadow-2xs flex flex-col justify-between">
+            <span className="text-[11px] font-semibold text-[#7A756D] dark:text-[#9DB0B5] flex items-center gap-1">
+              <Zap className="w-3.5 h-3.5 text-amber-500" /> Energy Vitality
+            </span>
+            <div className="mt-1 flex items-baseline gap-1.5">
+              <span className="text-xl font-bold font-mono text-[#2D2D2B] dark:text-[#F8FAFC]">
+                {weekAverages.avgEnergy}
+              </span>
+              <span className="text-[10px] text-[#7A756D]">/ 5.0</span>
+            </div>
+            <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium truncate mt-0.5">
+              {weekAverages.avgEnergy >= 3.5 ? '⚡ High Energy' : '🌱 Steady Pace'}
+            </span>
+          </div>
+        </div>
+
+        {/* 🎯 Personalized Recommendation Card */}
+        <div className="p-4 bg-white/90 dark:bg-[#1E292B]/90 rounded-2xl border border-[#4A8B8D]/25 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 rounded-xl shrink-0 mt-0.5">
+              <Lightbulb className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold tracking-wider text-[#4A8B8D] dark:text-[#63C1C4] block">
+                Personalized Recommendation
+              </span>
+              <p className="text-xs text-[#2D2D2B] dark:text-[#F3F6F8] font-medium leading-relaxed">
+                {forecast?.recommendedInterventionName
+                  ? `Based on your upcoming ${forecast.upcomingWindowName}, taking 2 minutes of ${forecast.recommendedInterventionName} will buffer stress surge.`
+                  : 'Start with 60 seconds of gentle diaphragmatic pacing to center your focus for the day.'}
+              </p>
+            </div>
+          </div>
+
           <button
-            id="home-checkin-cta"
-            onClick={onOpenCheckin}
-            className="w-full sm:w-auto py-2.5 px-6 bg-[#4A8B8D] hover:bg-[#376F71] active:scale-95 text-white rounded-full font-medium text-sm shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap"
+            onClick={onOpenMoment}
+            className="px-3 py-1.5 bg-[#4A8B8D] hover:bg-[#376F71] text-white rounded-xl text-xs font-bold shrink-0 flex items-center gap-1 cursor-pointer transition-all active:scale-95 shadow-2xs"
           >
-            <Sparkles className="w-4 h-4 text-[#F5D5CB]" />
-            <span>{t.startDailyPulseBtn || "Today's Check-in"}</span>
+            <span>Try Recommendation →</span>
           </button>
+        </div>
+
+        {/* 🚀 3 Key Navigation Action Buttons: Talk to Mithra, Prepare for Counselling, Mind Relax */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
           <button
-            id="home-chat-cta"
+            id="home-btn-talk-mithra"
             onClick={onOpenCompanionChat}
-            className="w-full sm:w-auto py-2.5 px-6 bg-[#F9F7F2] dark:bg-[#161D20] hover:bg-[#F0EDE4] dark:hover:bg-[#1C2527] text-[#4A8B8D] dark:text-[#63C1C4] border border-[#E8E4D9] dark:border-[#2B383C] rounded-full font-medium text-sm transition-colors flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+            className="p-3.5 bg-white dark:bg-[#1E292B] hover:bg-[#F9F7F2] dark:hover:bg-[#253337] rounded-2xl border border-[#E8E4D9] dark:border-[#2F3D42] flex items-center justify-between gap-2 shadow-2xs hover:border-[#4A8B8D]/50 transition-all cursor-pointer group text-left"
           >
-            <span>{t.chatWith || 'Talk to'} {companion.name}</span>
+            <div className="flex items-center gap-3">
+              <span className="text-2xl group-hover:scale-110 transition-transform">🤖</span>
+              <div>
+                <span className="font-bold text-xs text-[#2D2D2B] dark:text-[#F3F6F8] block">
+                  Talk to Mithra
+                </span>
+                <span className="text-[10px] text-[#7A756D] dark:text-[#9BA3AF]">
+                  Empathetic AI listener
+                </span>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#7A756D] group-hover:text-[#4A8B8D] transition-colors" />
+          </button>
+
+          <button
+            id="home-btn-counselling-prep"
+            onClick={onOpenCounsellorBooking}
+            className="p-3.5 bg-white dark:bg-[#1E292B] hover:bg-[#F9F7F2] dark:hover:bg-[#253337] rounded-2xl border border-[#E8E4D9] dark:border-[#2F3D42] flex items-center justify-between gap-2 shadow-2xs hover:border-[#4A8B8D]/50 transition-all cursor-pointer group text-left"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-2xl group-hover:scale-110 transition-transform">🎓</span>
+              <div>
+                <span className="font-bold text-xs text-[#2D2D2B] dark:text-[#F3F6F8] block">
+                  Prepare for Counselling
+                </span>
+                <span className="text-[10px] text-[#7A756D] dark:text-[#9BA3AF]">
+                  Free & confidential booking
+                </span>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#7A756D] group-hover:text-[#4A8B8D] transition-colors" />
+          </button>
+
+          <button
+            id="home-btn-mind-relax"
+            onClick={onOpenRelax}
+            className="p-3.5 bg-white dark:bg-[#1E292B] hover:bg-[#F9F7F2] dark:hover:bg-[#253337] rounded-2xl border border-[#E8E4D9] dark:border-[#2F3D42] flex items-center justify-between gap-2 shadow-2xs hover:border-[#4A8B8D]/50 transition-all cursor-pointer group text-left"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-2xl group-hover:scale-110 transition-transform">🧘</span>
+              <div>
+                <span className="font-bold text-xs text-[#2D2D2B] dark:text-[#F3F6F8] block">
+                  Mind Relax
+                </span>
+                <span className="text-[10px] text-[#7A756D] dark:text-[#9BA3AF]">
+                  Breathing, sounds & grounding
+                </span>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#7A756D] group-hover:text-[#4A8B8D] transition-colors" />
           </button>
         </div>
       </div>
+
+      {/* 🔮 INNOVATION #1: STRESS FORECAST RADAR */}
+      {forecast && (
+        <StressForecastRadar
+          forecast={forecast}
+          academicEvents={academicEvents}
+          onTriggerMoment={onOpenMoment}
+          onAddAcademicEvent={onAddAcademicEvent}
+          onDeleteAcademicEvent={onDeleteAcademicEvent}
+        />
+      )}
+
+      {/* 🎯 INNOVATIONS #2 & #3: PERSONAL COPING ENGINE & CLOSED-LOOP ANALYTICS */}
+      {copingProfile && (
+        <PersonalCopingEngineCard
+          profile={copingProfile}
+          outcomes={interventionOutcomes}
+          onSelectIntervention={onSelectIntervention}
+          onOpenMoment={onOpenMoment}
+        />
+      )}
 
       {/* 2. Week-Long Mood Trend Visualization with Recharts */}
       <div className="bg-white dark:bg-[#192225] p-6 sm:p-8 rounded-[36px] border border-[#E8E4D9] dark:border-[#2B383C] shadow-sm space-y-6 transition-colors">
@@ -846,6 +1056,12 @@ export const HomeInsightsView: React.FC<HomeInsightsViewProps> = ({
           </button>
         </div>
       </div>
+
+      {/* 🤝 INNOVATION #7: SMART HUMAN ESCALATION PROTOCOL */}
+      <SmartEscalationBanner
+        onOpenCounsellorBooking={onOpenCounsellorBooking}
+        onOpenCrisisBar={onOpenCrisisBar}
+      />
 
       {/* 4. "LEAVE A MESSAGE FOR FUTURE YOU" TIME CAPSULE */}
       <div className="bg-white dark:bg-[#192225] p-6 sm:p-8 rounded-[36px] border border-[#E8E4D9] dark:border-[#2B383C] shadow-sm space-y-5 transition-colors">

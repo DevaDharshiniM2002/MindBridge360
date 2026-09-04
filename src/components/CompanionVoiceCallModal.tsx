@@ -22,6 +22,7 @@ import {
   isSpeechRecognitionSupported,
   detectTextLanguage,
   RecognizerInstance,
+  playToneCue,
 } from '../utils/speechService';
 
 interface CompanionVoiceCallModalProps {
@@ -52,6 +53,7 @@ export const CompanionVoiceCallModal: React.FC<CompanionVoiceCallModalProps> = (
   const [isMicMuted, setIsMicMuted] = useState(false);
   const [isSpeakerMuted, setIsSpeakerMuted] = useState(false);
   const [handsFree, setHandsFree] = useState(true);
+  const [visemeIndex, setVisemeIndex] = useState<number | undefined>(undefined);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const recognizerRef = useRef<RecognizerInstance | null>(null);
@@ -258,9 +260,13 @@ export const CompanionVoiceCallModal: React.FC<CompanionVoiceCallModalProps> = (
           onStart: () => {
             if (isMountedRef.current) setCallState('speaking');
           },
+          onViseme: (v) => {
+            if (isMountedRef.current) setVisemeIndex(v);
+          },
           onEnd: () => {
             if (isMountedRef.current) {
               setCallState('idle');
+              setVisemeIndex(undefined);
               if (handsFree && !isMicMuted) {
                 setTimeout(() => {
                   if (isMountedRef.current) startListening();
@@ -271,12 +277,14 @@ export const CompanionVoiceCallModal: React.FC<CompanionVoiceCallModalProps> = (
           onError: () => {
             if (isMountedRef.current) {
               setCallState('idle');
+              setVisemeIndex(undefined);
               if (handsFree && !isMicMuted) startListening();
             }
           },
         });
       } else {
         setCallState('idle');
+        setVisemeIndex(undefined);
         if (handsFree && !isMicMuted) {
           setTimeout(() => {
             if (isMountedRef.current) startListening();
@@ -383,16 +391,27 @@ export const CompanionVoiceCallModal: React.FC<CompanionVoiceCallModalProps> = (
               <div className="p-4 bg-white/10 rounded-[32px] border border-white/20 shadow-xl backdrop-blur-sm">
                 <CompanionAvatar
                   avatar={safeCompanion.avatar}
+                  state={
+                    callState === 'speaking'
+                      ? 'speaking'
+                      : callState === 'listening'
+                      ? 'listening'
+                      : callState === 'processing'
+                      ? 'thinking'
+                      : 'idle'
+                  }
+                  lipSyncValue={visemeIndex !== undefined ? visemeIndex / 5 : undefined}
                   emotion={
                     callState === 'speaking'
                       ? 'happy'
                       : callState === 'listening'
                       ? 'listening'
                       : callState === 'processing'
-                      ? 'breathing'
+                      ? 'concerned'
                       : 'neutral'
                   }
                   size="lg"
+                  isAnimated
                 />
               </div>
             </div>

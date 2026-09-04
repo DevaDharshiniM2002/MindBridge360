@@ -16,6 +16,8 @@ interface CompanionCustomizerProps {
 }
 
 const AVATAR_OPTIONS: { id: CompanionAvatarType; label: string; desc: string }[] = [
+  { id: 'mithra', label: 'Mithra (மித்ரா)', desc: 'Warm, gentle, empathetic female companion' },
+  { id: 'mithran', label: 'Mithran (மித்ரன்)', desc: 'Calm, friendly, supportive male companion' },
   { id: 'blob', label: 'Soft Blob', desc: 'Squishy, empathetic & calming companion' },
   { id: 'otter', label: 'River Otter', desc: 'Gentle, playful, and loyal listener' },
   { id: 'sprout', label: 'Sprout', desc: 'Grounded, peaceful, and blossoming' },
